@@ -1,33 +1,74 @@
-function App() {
-  
-  const checkDeadlock = async () => {
-    
-    const graph = {
-      P1 : ["R1"],
-      R1 : ["P2"],
-      P2 : ["R2"],
-      R2 : ["P1"]
-    };
+import React, { useState } from "react";
 
-    const result = await fetch('http://localhost:8080/check', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({graph})
+function App() {
+  const [process, setProcess] = useState("");
+  const [resource, setResource] = useState("");
+  const [graph, setGraph] = useState({});
+
+  // Add P -> R
+  const requestResource = () => {
+    if (!process || !resource) return;
+
+    setGraph((prev) => {
+      const newGraph = { ...prev };
+      if (!newGraph[process]) newGraph[process] = [];
+      newGraph[process].push(resource);
+      return newGraph;
     });
 
-    const data = await result.json();
-    console.log(data);
+    console.log("Graph Updated:", graph);
+  };
 
-  }
+  // Add R -> P
+  const allocateResource = () => {
+    if (!process || !resource) return;
+
+    setGraph((prev) => {
+      const newGraph = { ...prev };
+      if (!newGraph[resource]) newGraph[resource] = [];
+      newGraph[resource].push(process);
+      return newGraph;
+    });
+
+    console.log("Graph Updated:", graph);
+  };
+
+  const detectDeadlock = async () => {
+    const res = await fetch("http://localhost:8080/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ graph }),
+    });
+    const data = await res.json();
+    console.log("Deadlock Result:", data);
+  };
 
   return (
-    <>
-    <div>
-       <h1 className="text-3xl font-bold underline">Deadlock Detection</h1>
-       <button className="bg-slate-500 rounded-lg p-3" onClick={checkDeadlock}>Check Deadlock</button>
+    <div style={{ padding: 20 }}>
+      <h1>Deadlock Detective (Day 6 UI)</h1>
+
+      <input
+        placeholder="Process like P1"
+        value={process}
+        onChange={(e) => setProcess(e.target.value)}
+      />
+
+      <input
+        placeholder="Resource like R1"
+        value={resource}
+        onChange={(e) => setResource(e.target.value)}
+      />
+
+      <br /><br />
+
+      <button onClick={requestResource}>Request Resource</button>
+      <button onClick={allocateResource}>Allocate Resource</button>
+      <button onClick={detectDeadlock}>Detect Deadlock</button>
+
+      <pre>{JSON.stringify(graph, null, 2)}</pre>
     </div>
-    </>
-  )
+  );
 }
 
-export default App
+export default App;
+
