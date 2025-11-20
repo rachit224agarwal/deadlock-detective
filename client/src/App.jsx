@@ -8,17 +8,14 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 
-// Required empty nodeTypes + edgeTypes (fixes warnings in ReactFlow v11)
+// Required empty nodeTypes + edgeTypes
 const nodeTypes = {};
 const edgeTypes = {};
 
-/* ----------------------------------------------------------
-   Convert adjacency list graph -> React Flow nodes + edges
------------------------------------------------------------*/
+// Build nodes + edges
 function buildNodesAndEdgesFromGraph(graph) {
   const ids = new Set();
 
-  // collect node IDs
   Object.keys(graph).forEach((from) => {
     ids.add(from);
     (graph[from] || []).forEach((to) => ids.add(to));
@@ -31,13 +28,10 @@ function buildNodesAndEdgesFromGraph(graph) {
       id,
       type: "default",
       data: { label: id },
-
-      // Valid positions for ReactFlow v11
       position: {
         x: (i % 5) * 200,
         y: Math.floor(i / 5) * 140,
       },
-
       style: {
         padding: 10,
         borderRadius: 10,
@@ -48,7 +42,6 @@ function buildNodesAndEdgesFromGraph(graph) {
         borderColor: isProcess ? "#60a5fa" : "#f59e0b",
         fontWeight: 600,
       },
-
       sourcePosition: "right",
       targetPosition: "left",
     };
@@ -71,27 +64,19 @@ function buildNodesAndEdgesFromGraph(graph) {
   return { nodes, edges };
 }
 
-/* ----------------------------------------------------------
-   MAIN COMPONENT
------------------------------------------------------------*/
 export default function App() {
   const [processInput, setProcessInput] = useState("");
   const [resourceInput, setResourceInput] = useState("");
   const [graph, setGraph] = useState({});
-
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
 
-  // Build nodes & edges whenever graph changes
   useEffect(() => {
     const { nodes, edges } = buildNodesAndEdgesFromGraph(graph);
     setNodes(nodes);
     setEdges(edges);
   }, [graph]);
 
-  /* ----------------------------------------------------------
-     Button Actions
-  -----------------------------------------------------------*/
   const requestResource = () => {
     const p = processInput.trim();
     const r = resourceInput.trim();
@@ -153,9 +138,6 @@ export default function App() {
     }
   };
 
-  /* ----------------------------------------------------------
-     ReactFlow handlers (official v11 versions)
-  -----------------------------------------------------------*/
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
@@ -178,44 +160,37 @@ export default function App() {
     });
   }, []);
 
-  /* ----------------------------------------------------------
-     UI Layout
-  -----------------------------------------------------------*/
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div className="flex h-screen">
       {/* LEFT PANEL */}
-      <div
-        style={{
-          width: 300,
-          padding: 20,
-          borderRight: "1px solid #ddd",
-          background: "#f8fafc",
-        }}
-      >
-        <h2 style={{ fontWeight: 700, marginBottom: 10 }}>Deadlock Detective</h2>
+      <div className="w-72 p-5 border-r bg-slate-50">
+        <h2 className="font-bold text-xl mb-4">Deadlock Detective</h2>
 
         <input
           placeholder="Process (P1)"
           value={processInput}
           onChange={(e) => setProcessInput(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 8 }}
+          className="w-full p-2 mb-3 border rounded outline-none focus:ring-2 focus:ring-blue-400"
         />
 
         <input
           placeholder="Resource (R1)"
           value={resourceInput}
           onChange={(e) => setResourceInput(e.target.value)}
-          style={{ width: "100%", padding: 8 }}
+          className="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-blue-400"
         />
 
-        <div style={{ marginTop: 12 }}>
-          <button onClick={requestResource} style={{ padding: 8 }}>
+        <div className="mt-4 space-x-3">
+          <button
+            onClick={requestResource}
+            className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
             Request (P → R)
           </button>
 
           <button
             onClick={allocateResource}
-            style={{ padding: 8, marginLeft: 10 }}
+            className="px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
           >
             Allocate (R → P)
           </button>
@@ -223,50 +198,33 @@ export default function App() {
 
         <button
           onClick={detectDeadlock}
-          style={{
-            padding: "10px 14px",
-            marginTop: 12,
-            background: "#ef4444",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-          }}
+          className="mt-4 w-full py-2 bg-red-500 text-white rounded hover:bg-red-600"
         >
           Detect Deadlock
         </button>
 
-        <pre
-          style={{
-            marginTop: 20,
-            background: "#f1f5f9",
-            padding: 10,
-            height: 200,
-            overflow: "auto",
-          }}
-        >
+        <pre className="mt-5 bg-white p-3 rounded border h-64 overflow-auto text-sm">
           {JSON.stringify(graph, null, 2)}
         </pre>
       </div>
 
       {/* RIGHT PANEL */}
-      <div style={{ flex: 1 }}>
-        <div style={{ width: "100%", height: "100%" }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            fitView
-            proOptions={{ hideAttribution: true }}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-          >
-            <MiniMap nodeColor={(n) => n.style?.background || "#ccc"} />
-            <Controls />
-            <Background />
-          </ReactFlow>
-        </div>
+      <div className="flex-1">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+          proOptions={{ hideAttribution: true }}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+        >
+          <MiniMap nodeColor={(n) => n.style?.background || "#ccc"} />
+          <Controls />
+          <Background />
+        </ReactFlow>
       </div>
     </div>
   );
