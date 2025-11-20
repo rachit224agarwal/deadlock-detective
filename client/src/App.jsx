@@ -6,13 +6,22 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
 } from "reactflow";
+
 import "reactflow/dist/style.css";
 
-// Required empty nodeTypes + edgeTypes
+// Required empty types (fixes warnings)
 const nodeTypes = {};
 const edgeTypes = {};
 
-// Build nodes + edges
+/* ----------------------------------------------------------
+   Fun names for dynamic creation
+-----------------------------------------------------------*/
+const funProcesses = ["Chrome","Zoom","YouTube","Spotify","WhatsApp","Instagram","VSCode","Figma","CameraApp","FileManager","Maps","Downloader","Uploader","SyncService"];
+const funResources = ["Camera","Microphone","Storage","RAM","GPU","Network","WiFi","Bluetooth","GPS","GalleryFolder","Clipboard","FileA","FileB"];
+
+/* ----------------------------------------------------------
+   Build nodes & edges from adjacency graph
+-----------------------------------------------------------*/
 function buildNodesAndEdgesFromGraph(graph) {
   const ids = new Set();
 
@@ -22,16 +31,18 @@ function buildNodesAndEdgesFromGraph(graph) {
   });
 
   const nodes = Array.from(ids).map((id, i) => {
-    const isProcess = id[0].toUpperCase() === "P";
+    const isProcess = id.startsWith("P");
 
     return {
       id,
       type: "default",
       data: { label: id },
+
       position: {
         x: (i % 5) * 200,
         y: Math.floor(i / 5) * 140,
       },
+
       style: {
         padding: 10,
         borderRadius: 10,
@@ -42,6 +53,7 @@ function buildNodesAndEdgesFromGraph(graph) {
         borderColor: isProcess ? "#60a5fa" : "#f59e0b",
         fontWeight: 600,
       },
+
       sourcePosition: "right",
       targetPosition: "left",
     };
@@ -64,19 +76,87 @@ function buildNodesAndEdgesFromGraph(graph) {
   return { nodes, edges };
 }
 
+/* ----------------------------------------------------------
+   MAIN COMPONENT
+-----------------------------------------------------------*/
 export default function App() {
   const [processInput, setProcessInput] = useState("");
   const [resourceInput, setResourceInput] = useState("");
+
   const [graph, setGraph] = useState({});
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
 
-  useEffect(() => {
-    const { nodes, edges } = buildNodesAndEdgesFromGraph(graph);
-    setNodes(nodes);
-    setEdges(edges);
-  }, [graph]);
+  // ⭐ Dynamic custom nodes
+  const [customNodes, setCustomNodes] = useState([]);
 
+  /* ----------------------------------------------------------
+     Build graph nodes + dynamic nodes whenever graph/custom change
+  -----------------------------------------------------------*/
+  useEffect(() => {
+    const { nodes: builtNodes, edges: builtEdges } =
+      buildNodesAndEdgesFromGraph(graph);
+
+    setNodes([...builtNodes, ...customNodes]);
+    setEdges(builtEdges);
+  }, [graph, customNodes]);
+
+  /* ----------------------------------------------------------
+     Dynamic Node Creation
+  -----------------------------------------------------------*/
+  const addProcess = () => {
+    const name =
+      funProcesses[Math.floor(Math.random() * funProcesses.length)];
+    const id = `P_${name}_${Date.now()}`;
+
+    setCustomNodes((prev) => [
+      ...prev,
+      {
+        id,
+        type: "default",
+        position: { x: Math.random() * 400, y: Math.random() * 400 },
+        data: { label: name },
+        style: {
+          background: "#dbeafe",
+          border: "2px solid #60a5fa",
+          padding: 10,
+          borderRadius: 10,
+          fontWeight: 600,
+        },
+      },
+    ]);
+
+    setGraph((g) => ({ ...g, [id]: [] }));
+  };
+
+  const addResource = () => {
+    const name =
+      funResources[Math.floor(Math.random() * funResources.length)];
+    const id = `R_${name}_${Date.now()}`;
+
+    setCustomNodes((prev) => [
+      ...prev,
+      {
+        id,
+        type: "default",
+        position: { x: Math.random() * 400, y: Math.random() * 400 },
+        data: { label: name },
+        style: {
+          background: "#fde7c3",
+          border: "2px solid #f59e0b",
+          padding: 10,
+          borderRadius: 10,
+          fontWeight: 600,
+        },
+      },
+    ]);
+
+    setGraph((g) => ({ ...g, [id]: [] }));
+  };
+
+  /* ----------------------------------------------------------
+     Request & Allocate
+  -----------------------------------------------------------*/
   const requestResource = () => {
     const p = processInput.trim();
     const r = resourceInput.trim();
@@ -103,6 +183,9 @@ export default function App() {
     });
   };
 
+  /* ----------------------------------------------------------
+     Deadlock Detection
+  -----------------------------------------------------------*/
   const detectDeadlock = async () => {
     try {
       const res = await fetch("http://localhost:8080/check", {
@@ -112,32 +195,41 @@ export default function App() {
       });
 
       const data = await res.json();
-      console.log("Deadlock result:", data);
 
       if (data.cycle?.length > 0) {
-        const highlightEdges = new Set();
-
+        const highlight = new Set();
         for (let i = 0; i < data.cycle.length - 1; i++) {
-          highlightEdges.add(`${data.cycle[i]}__${data.cycle[i + 1]}`);
+          highlight.add(`${data.cycle[i]}__${data.cycle[i + 1]}`);
         }
 
         setEdges((prev) =>
           prev.map((e) =>
-            highlightEdges.has(e.id)
-              ? { ...e, style: { stroke: "red", strokeWidth: 3 }, animated: true }
+            highlight.has(e.id)
+              ? {
+                  ...e,
+                  style: { stroke: "red", strokeWidth: 3 },
+                  animated: true,
+                }
               : { ...e, style: { stroke: "#555" }, animated: false }
           )
         );
       } else {
         setEdges((prev) =>
-          prev.map((e) => ({ ...e, style: { stroke: "#555" }, animated: false }))
+          prev.map((e) => ({
+            ...e,
+            style: { stroke: "#555" },
+            animated: false,
+          }))
         );
       }
     } catch (err) {
-      console.error("Deadlock check failed:", err);
+      console.error("Deadlock error:", err);
     }
   };
 
+  /* ----------------------------------------------------------
+     ReactFlow Handlers
+  -----------------------------------------------------------*/
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
@@ -150,7 +242,6 @@ export default function App() {
 
   const onConnect = useCallback((conn) => {
     const { source, target } = conn;
-
     setGraph((prev) => {
       const g = { ...prev };
       if (!g[source]) g[source] = [];
@@ -160,50 +251,66 @@ export default function App() {
     });
   }, []);
 
+  /* ----------------------------------------------------------
+     UI Layout + Tailwind
+  -----------------------------------------------------------*/
   return (
     <div className="flex h-screen">
       {/* LEFT PANEL */}
-      <div className="w-72 p-5 border-r bg-slate-50">
+      <div className="w-[300px] p-5 border-r bg-slate-50">
         <h2 className="font-bold text-xl mb-4">Deadlock Detective</h2>
 
         <input
           placeholder="Process (P1)"
           value={processInput}
           onChange={(e) => setProcessInput(e.target.value)}
-          className="w-full p-2 mb-3 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full p-2 border rounded mb-3"
         />
 
         <input
           placeholder="Resource (R1)"
           value={resourceInput}
           onChange={(e) => setResourceInput(e.target.value)}
-          className="w-full p-2 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full p-2 border rounded"
         />
 
-        <div className="mt-4 space-x-3">
+        <div className="mt-3 flex gap-2">
           <button
             onClick={requestResource}
-            className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="bg-blue-500 text-white px-3 py-2 rounded"
           >
-            Request (P → R)
+            Request
           </button>
 
           <button
             onClick={allocateResource}
-            className="px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600"
+            className="bg-amber-500 text-white px-3 py-2 rounded"
           >
-            Allocate (R → P)
+            Allocate
+          </button>
+        </div>
+
+        {/* Dynamic Buttons */}
+        <div className="mt-6 flex flex-col gap-3">
+          <button className="bg-blue-600 text-white py-2 rounded"
+            onClick={addProcess}>
+            ➕ Add Process
+          </button>
+
+          <button className="bg-orange-500 text-white py-2 rounded"
+            onClick={addResource}>
+            ➕ Add Resource
           </button>
         </div>
 
         <button
           onClick={detectDeadlock}
-          className="mt-4 w-full py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className="bg-red-500 text-white px-4 py-2 rounded mt-6 w-full"
         >
           Detect Deadlock
         </button>
 
-        <pre className="mt-5 bg-white p-3 rounded border h-64 overflow-auto text-sm">
+        <pre className="mt-4 bg-slate-200 p-3 h-48 overflow-auto text-sm">
           {JSON.stringify(graph, null, 2)}
         </pre>
       </div>
