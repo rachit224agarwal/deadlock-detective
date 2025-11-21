@@ -63,9 +63,8 @@ function buildNodesAndEdgesFromGraph(graph) {
   const edges = [];
   Object.entries(graph).forEach(([from, tos]) => {
     (tos || []).forEach((to) => {
-      const id = `${from}__${to}`;
       edges.push({
-        id,
+        id: `${from}__${to}`,
         source: from,
         target: to,
         type: "default",
@@ -88,22 +87,19 @@ export default function App() {
   const [baseEdges, setBaseEdges] = useState([]);
 
   const [customNodes, setCustomNodes] = useState([]);
-
-  // ⭐ Day-10 popup message
   const [deadlockMessage, setDeadlockMessage] = useState("");
 
-  // Build nodes for graph + custom nodes
+  // Build nodes when graph updates
   useEffect(() => {
-  const { nodes: builtNodes, edges: builtEdges } =
-    buildNodesAndEdgesFromGraph(graph);
+    const { nodes: builtNodes, edges: builtEdges } =
+      buildNodesAndEdgesFromGraph(graph);
 
-  setNodes([...builtNodes, ...customNodes]);
-  setBaseEdges(builtEdges);   // ONLY update baseEdges
-  setEdges(builtEdges);       // reset visual edges when graph changes
-}, [graph, customNodes]);
+    setNodes([...builtNodes, ...customNodes]);
+    setBaseEdges(builtEdges);
+    setEdges(builtEdges);
+  }, [graph, customNodes]);
 
-
-  // Add random process node
+  // Add random process
   const addProcess = () => {
     const name = funProcesses[Math.floor(Math.random() * funProcesses.length)];
     const id = `P_${name}_${Date.now()}`;
@@ -128,7 +124,7 @@ export default function App() {
     setGraph((g) => ({ ...g, [id]: [] }));
   };
 
-  // Add random resource node
+  // Add random resource
   const addResource = () => {
     const name = funResources[Math.floor(Math.random() * funResources.length)];
     const id = `R_${name}_${Date.now()}`;
@@ -183,65 +179,51 @@ export default function App() {
     });
   };
 
-  // DAY-10: Deadlock detection + popup
+  // Detect deadlock
   const detectDeadlock = async () => {
-  console.log("SENDING GRAPH:", graph);
+    try {
+      const res = await fetch("http://localhost:8080/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ graph }),
+      });
 
-  try {
-    const res = await fetch("http://localhost:8080/check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ graph }),
-    });
+      const data = await res.json();
+      const cycle = data.cycle || [];
 
-    const data = await res.json();
-    console.log("RESPONSE FROM BACKEND:", data);
+      if (cycle.length > 0) {
+        const highlight = new Set();
+        for (let i = 0; i < cycle.length - 1; i++) {
+          highlight.add(`${cycle[i]}__${cycle[i + 1]}`);
+        }
 
-    const cycle = data.deadlock?.cycle || [];
+        setEdges(
+          baseEdges.map((e) =>
+            highlight.has(e.id)
+              ? { ...e, style: { stroke: "red", strokeWidth: 3 }, animated: true }
+              : { ...e, style: { stroke: "#555" }, animated: false }
+          )
+        );
 
-    if (cycle.length > 0) {
-      const highlight = new Set();
+        const names = cycle.map((id) =>
+          id.includes("_") ? id.split("_")[1] : id
+        );
 
-      for (let i = 0; i < cycle.length - 1; i++) {
-        highlight.add(`${cycle[i]}__${cycle[i + 1]}`);
+        setDeadlockMessage(`💀 Deadlock detected between: ${names.join(" ↔ ")}`);
+      } else {
+        setEdges(
+          baseEdges.map((e) => ({
+            ...e,
+            style: { stroke: "#555" },
+            animated: false,
+          }))
+        );
+        setDeadlockMessage("");
       }
-
-      setEdges(
-        baseEdges.map(e =>
-          highlight.has(e.id)
-            ? {
-                ...e,
-                style: { stroke: "red", strokeWidth: 3 },
-                animated: true,
-              }
-            : {
-                ...e,
-                style: { stroke: "#555" },
-                animated: false,
-              }
-        )
-      );
-
-      const names = cycle.map(id =>
-        id.includes("_") ? id.split("_")[1] : id
-      );
-
-      setDeadlockMessage(`💀 Deadlock detected between: ${names.join(" ↔ ")}`);
-    } else {
-      setEdges(
-        baseEdges.map(e => ({
-          ...e,
-          style: { stroke: "#555" },
-          animated: false,
-        }))
-      );
-      setDeadlockMessage("");
+    } catch (err) {
+      console.error("Deadlock error:", err);
     }
-  } catch (err) {
-    console.error("Deadlock error:", err);
-  }
-};
-
+  };
 
   // ReactFlow handlers
   const onNodesChange = useCallback(
@@ -266,10 +248,9 @@ export default function App() {
     });
   }, []);
 
-  // UI
   return (
     <div className="flex h-screen">
-      
+
       {/* LEFT PANEL */}
       <div className="w-[300px] p-5 border-r bg-slate-50">
         <h2 className="font-bold text-xl mb-4">Deadlock Detective</h2>
@@ -349,7 +330,7 @@ export default function App() {
           <Controls />
           <Background />
 
-          {/* 🧨 DEADLOCK POPUP */}
+          {/* DEADLOCK POPUP */}
           {deadlockMessage && (
             <div className="absolute top-5 right-5 bg-red-600 text-white px-5 py-3 rounded shadow-lg text-lg font-semibold animate-pulse">
               {deadlockMessage}
@@ -357,7 +338,6 @@ export default function App() {
           )}
         </ReactFlow>
       </div>
-
     </div>
   );
 }
