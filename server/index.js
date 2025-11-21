@@ -16,7 +16,7 @@ app.get("/",(req,res)=>{
 app.post("/check", (req, res) => {
   const { graph } = req.body;
   const result = detectDeadlock(graph);
-  res.json({ deadlock: result });
+  res.json(result);
 });
 
 app.listen( 8080, "0.0.0.0" , () => console.log("Server live on port 8080") );

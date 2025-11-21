@@ -9,19 +9,23 @@ import ReactFlow, {
 
 import "reactflow/dist/style.css";
 
-// Required empty types (fixes warnings)
+// Required empty types for ReactFlow v11
 const nodeTypes = {};
 const edgeTypes = {};
 
-/* ----------------------------------------------------------
-   Fun names for dynamic creation
------------------------------------------------------------*/
-const funProcesses = ["Chrome","Zoom","YouTube","Spotify","WhatsApp","Instagram","VSCode","Figma","CameraApp","FileManager","Maps","Downloader","Uploader","SyncService"];
-const funResources = ["Camera","Microphone","Storage","RAM","GPU","Network","WiFi","Bluetooth","GPS","GalleryFolder","Clipboard","FileA","FileB"];
+// Fun names
+const funProcesses = [
+  "Chrome", "Zoom", "YouTube", "Spotify", "WhatsApp", "Instagram",
+  "VSCode", "Figma", "CameraApp", "FileManager", "Maps",
+  "Downloader", "Uploader", "SyncService"
+];
 
-/* ----------------------------------------------------------
-   Build nodes & edges from adjacency graph
------------------------------------------------------------*/
+const funResources = [
+  "Camera", "Microphone", "Storage", "RAM", "GPU", "Network", "WiFi",
+  "Bluetooth", "GPS", "GalleryFolder", "Clipboard", "FileA", "FileB"
+];
+
+// Build nodes + edges from adjacency graph
 function buildNodesAndEdgesFromGraph(graph) {
   const ids = new Set();
 
@@ -37,12 +41,10 @@ function buildNodesAndEdgesFromGraph(graph) {
       id,
       type: "default",
       data: { label: id },
-
       position: {
         x: (i % 5) * 200,
         y: Math.floor(i / 5) * 140,
       },
-
       style: {
         padding: 10,
         borderRadius: 10,
@@ -53,7 +55,6 @@ function buildNodesAndEdgesFromGraph(graph) {
         borderColor: isProcess ? "#60a5fa" : "#f59e0b",
         fontWeight: 600,
       },
-
       sourcePosition: "right",
       targetPosition: "left",
     };
@@ -62,8 +63,9 @@ function buildNodesAndEdgesFromGraph(graph) {
   const edges = [];
   Object.entries(graph).forEach(([from, tos]) => {
     (tos || []).forEach((to) => {
+      const id = `${from}__${to}`;
       edges.push({
-        id: `${from}__${to}`,
+        id,
         source: from,
         target: to,
         type: "default",
@@ -76,9 +78,6 @@ function buildNodesAndEdgesFromGraph(graph) {
   return { nodes, edges };
 }
 
-/* ----------------------------------------------------------
-   MAIN COMPONENT
------------------------------------------------------------*/
 export default function App() {
   const [processInput, setProcessInput] = useState("");
   const [resourceInput, setResourceInput] = useState("");
@@ -87,12 +86,12 @@ export default function App() {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
 
-  // ⭐ Dynamic custom nodes
   const [customNodes, setCustomNodes] = useState([]);
 
-  /* ----------------------------------------------------------
-     Build graph nodes + dynamic nodes whenever graph/custom change
-  -----------------------------------------------------------*/
+  // ⭐ Day-10 popup message
+  const [deadlockMessage, setDeadlockMessage] = useState("");
+
+  // Build nodes for graph + custom nodes
   useEffect(() => {
     const { nodes: builtNodes, edges: builtEdges } =
       buildNodesAndEdgesFromGraph(graph);
@@ -101,12 +100,9 @@ export default function App() {
     setEdges(builtEdges);
   }, [graph, customNodes]);
 
-  /* ----------------------------------------------------------
-     Dynamic Node Creation
-  -----------------------------------------------------------*/
+  // Add random process node
   const addProcess = () => {
-    const name =
-      funProcesses[Math.floor(Math.random() * funProcesses.length)];
+    const name = funProcesses[Math.floor(Math.random() * funProcesses.length)];
     const id = `P_${name}_${Date.now()}`;
 
     setCustomNodes((prev) => [
@@ -129,9 +125,9 @@ export default function App() {
     setGraph((g) => ({ ...g, [id]: [] }));
   };
 
+  // Add random resource node
   const addResource = () => {
-    const name =
-      funResources[Math.floor(Math.random() * funResources.length)];
+    const name = funResources[Math.floor(Math.random() * funResources.length)];
     const id = `R_${name}_${Date.now()}`;
 
     setCustomNodes((prev) => [
@@ -154,9 +150,7 @@ export default function App() {
     setGraph((g) => ({ ...g, [id]: [] }));
   };
 
-  /* ----------------------------------------------------------
-     Request & Allocate
-  -----------------------------------------------------------*/
+  // Request(P->R)
   const requestResource = () => {
     const p = processInput.trim();
     const r = resourceInput.trim();
@@ -164,12 +158,14 @@ export default function App() {
 
     setGraph((prev) => {
       const g = { ...prev };
-      g[p] = [...(g[p] || []), r];
+      if (!g[p]) g[p] = [];
+      if (!g[p].includes(r)) g[p].push(r);
       if (!g[r]) g[r] = [];
       return g;
     });
   };
 
+  // Allocate(R->P)
   const allocateResource = () => {
     const p = processInput.trim();
     const r = resourceInput.trim();
@@ -177,15 +173,14 @@ export default function App() {
 
     setGraph((prev) => {
       const g = { ...prev };
-      g[r] = [...(g[r] || []), p];
+      if (!g[r]) g[r] = [];
+      if (!g[r].includes(p)) g[r].push(p);
       if (!g[p]) g[p] = [];
       return g;
     });
   };
 
-  /* ----------------------------------------------------------
-     Deadlock Detection
-  -----------------------------------------------------------*/
+  // DAY-10: Deadlock detection + popup
   const detectDeadlock = async () => {
     try {
       const res = await fetch("http://localhost:8080/check", {
@@ -198,6 +193,7 @@ export default function App() {
 
       if (data.cycle?.length > 0) {
         const highlight = new Set();
+
         for (let i = 0; i < data.cycle.length - 1; i++) {
           highlight.add(`${data.cycle[i]}__${data.cycle[i + 1]}`);
         }
@@ -213,6 +209,14 @@ export default function App() {
               : { ...e, style: { stroke: "#555" }, animated: false }
           )
         );
+
+        // readable names
+        const names = data.cycle.map((id) => {
+          if (id.includes("_")) return id.split("_")[1]; // Chrome, Mic
+          return id;
+        });
+
+        setDeadlockMessage(`💀 Deadlock detected between: ${names.join(" ↔ ")}`);
       } else {
         setEdges((prev) =>
           prev.map((e) => ({
@@ -221,15 +225,14 @@ export default function App() {
             animated: false,
           }))
         );
+        setDeadlockMessage("");
       }
     } catch (err) {
       console.error("Deadlock error:", err);
     }
   };
 
-  /* ----------------------------------------------------------
-     ReactFlow Handlers
-  -----------------------------------------------------------*/
+  // ReactFlow handlers
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     []
@@ -242,6 +245,7 @@ export default function App() {
 
   const onConnect = useCallback((conn) => {
     const { source, target } = conn;
+
     setGraph((prev) => {
       const g = { ...prev };
       if (!g[source]) g[source] = [];
@@ -251,24 +255,23 @@ export default function App() {
     });
   }, []);
 
-  /* ----------------------------------------------------------
-     UI Layout + Tailwind
-  -----------------------------------------------------------*/
+  // UI
   return (
     <div className="flex h-screen">
+      
       {/* LEFT PANEL */}
       <div className="w-[300px] p-5 border-r bg-slate-50">
         <h2 className="font-bold text-xl mb-4">Deadlock Detective</h2>
 
         <input
-          placeholder="Process (P1)"
+          placeholder="Process (P...)"
           value={processInput}
           onChange={(e) => setProcessInput(e.target.value)}
           className="w-full p-2 border rounded mb-3"
         />
 
         <input
-          placeholder="Resource (R1)"
+          placeholder="Resource (R...)"
           value={resourceInput}
           onChange={(e) => setResourceInput(e.target.value)}
           className="w-full p-2 border rounded"
@@ -290,15 +293,18 @@ export default function App() {
           </button>
         </div>
 
-        {/* Dynamic Buttons */}
         <div className="mt-6 flex flex-col gap-3">
-          <button className="bg-blue-600 text-white py-2 rounded"
-            onClick={addProcess}>
+          <button
+            className="bg-blue-600 text-white py-2 rounded"
+            onClick={addProcess}
+          >
             ➕ Add Process
           </button>
 
-          <button className="bg-orange-500 text-white py-2 rounded"
-            onClick={addResource}>
+          <button
+            className="bg-orange-500 text-white py-2 rounded"
+            onClick={addResource}
+          >
             ➕ Add Resource
           </button>
         </div>
@@ -316,7 +322,7 @@ export default function App() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -331,8 +337,16 @@ export default function App() {
           <MiniMap nodeColor={(n) => n.style?.background || "#ccc"} />
           <Controls />
           <Background />
+
+          {/* 🧨 DEADLOCK POPUP */}
+          {deadlockMessage && (
+            <div className="absolute top-5 right-5 bg-red-600 text-white px-5 py-3 rounded shadow-lg text-lg font-semibold animate-pulse">
+              {deadlockMessage}
+            </div>
+          )}
         </ReactFlow>
       </div>
+
     </div>
   );
 }
