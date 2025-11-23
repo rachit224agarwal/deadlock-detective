@@ -225,6 +225,44 @@ export default function App() {
     }
   };
 
+  // 🧩 DAY-11: Kill a Process & Resolve Deadlock
+const killProcess = () => {
+  const p = processInput.trim();
+  if (!p || !p.startsWith("P")) {
+    console.warn("Enter a valid Process ID like P1 or P_Chrome_123");
+    return;
+  }
+
+  // 1. Remove node from graph
+  setGraph((prev) => {
+    const g = { ...prev };
+
+    // remove P from adjacency
+    delete g[p];
+
+    // remove any references to P in other lists
+    Object.keys(g).forEach((key) => {
+      g[key] = g[key].filter((x) => x !== p);
+    });
+
+    return g;
+  });
+
+  // 2. Remove the process node visually
+  setNodes((prev) => prev.filter((n) => n.id !== p));
+
+  // 3. Remove edges connected to that process
+  setBaseEdges((prev) => prev.filter((e) => e.source !== p && e.target !== p));
+  setEdges((prev) => prev.filter((e) => e.source !== p && e.target !== p));
+
+  // 4. Clear popup
+  setDeadlockMessage("");
+
+  // 5. Auto-check if deadlock is resolved
+  setTimeout(() => detectDeadlock(), 150);
+};
+
+
   // ReactFlow handlers
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -306,6 +344,13 @@ export default function App() {
           className="bg-red-500 text-white px-4 py-2 rounded mt-6 w-full"
         >
           Detect Deadlock
+        </button>
+
+        <button
+          onClick={killProcess}
+          className="bg-gray-700 text-white px-4 py-2 rounded mt-3 w-full"
+        >
+          Kill Process
         </button>
 
         <pre className="mt-4 bg-slate-200 p-3 h-48 overflow-auto text-sm">
