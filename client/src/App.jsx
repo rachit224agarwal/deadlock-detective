@@ -89,6 +89,9 @@ export default function App() {
   const [customNodes, setCustomNodes] = useState([]);
   const [deadlockMessage, setDeadlockMessage] = useState("");
 
+  const [explanation, setExplanation] = useState("");
+
+
   // Build nodes when graph updates
   useEffect(() => {
     const { nodes: builtNodes, edges: builtEdges } =
@@ -210,6 +213,10 @@ export default function App() {
         );
 
         setDeadlockMessage(`💀 Deadlock detected between: ${names.join(" ↔ ")}`);
+        // 🌟 Day-12 Explanation Panel
+        setExplanation(`Deadlock occurred due to circular wait. Each process/resource in the cycle 
+        (${names.join(" → ")}) is waiting for the next one, forming a loop.`);
+
       } else {
         setEdges(
           baseEdges.map((e) => ({
@@ -219,6 +226,7 @@ export default function App() {
           }))
         );
         setDeadlockMessage("");
+        setExplanation("No deadlock. The system is safe.");
       }
     } catch (err) {
       console.error("Deadlock error:", err);
@@ -382,6 +390,12 @@ const killProcess = () => {
             </div>
           )}
         </ReactFlow>
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[80%] 
+                bg-white shadow-lg border rounded-lg p-4 text-center text-gray-700">
+  <h3 className="font-bold text-lg mb-2">Explanation</h3>
+  <p className="text-sm">{explanation}</p>
+</div>
+
       </div>
     </div>
   );
