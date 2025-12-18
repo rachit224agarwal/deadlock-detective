@@ -1,140 +1,69 @@
 # Deadlock Detective – Interactive Deadlock Visualizer
 
-A modern, interactive **Deadlock Visualization Tool** built using  
-**React, ReactFlow, TailwindCSS, Node.js, and Express**.
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![NodeJS](https://img.shields.io/badge/Node.js-000000?style=for-the-badge&logo=node.js&logoColor=3C873A)
+![ReactFlow](https://img.shields.io/badge/ReactFlow-ffffff?style=for-the-badge&logo=react&logoColor=000000)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-0F172A?style=for-the-badge&logo=tailwindcss&logoColor=38BDF8)
+![Vite](https://img.shields.io/badge/Vite-0a0a0a?style=for-the-badge&logo=vite&logoColor=FFD62E)
 
-This tool visualizes how **deadlocks form**, shows **cycles**,  
-and explains the concept in clean English — perfect for **OS/DBMS viva** and **portfolio**.
-
----
-
-## 🚀 Live Demo
-
-👉 **Video Demo:** https://youtu.be/your-video-link  
-👉 **Screenshots below**
 
 ---
 
-## 🛠 Tech Stack
+## Overview
 
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
-![NodeJS](https://img.shields.io/badge/Node.js-Backend-339933?logo=node.js&logoColor=white)
-![Tailwind](https://img.shields.io/badge/TailwindCSS-Styling-38BDF8?logo=tailwindcss&logoColor=white)
-![ReactFlow](https://img.shields.io/badge/ReactFlow-Graph_Engine-8A2BE2)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E?logo=javascript&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-Build_Tool-646CFF?logo=vite&logoColor=white)
+**Deadlock Detective** is an interactive tool that visualizes how deadlocks occur in Operating Systems and DBMS.  
+Users can add processes, resources, and edges to form a resource allocation graph, and the backend analyzes it to detect deadlocks through cycle detection.
+
+Created to simplify concepts like circular wait and resource contention, this project is useful for students, viva preparation, and portfolios.
 
 ---
 
-## 📸 Screenshots
+## Story Behind the Project
 
-> Create a folder: `screenshots/` in your repo  
-> Add your screenshot images and update paths below.
+This project began in a **2nd-year Operating Systems lecture**.  
+Like most classes, I was sitting at the back, not paying much attention and talking to friends. But the moment my professor introduced **deadlocks**, something about the topic immediately stood out — the idea of processes, resources, and circular wait felt surprisingly interesting and visual.
 
-| Feature | Screenshot |
-|--------|------------|
-| Dashboard | ![dashboard](screenshots/dashboard.png) |
-| Add Processes/Resources | ![add-nodes](screenshots/add_nodes.png) |
-| Deadlock Highlighting | ![deadlock](screenshots/deadlock.png) |
-| Safe State (Confetti) | ![resolved](screenshots/resolved.png) |
-| Explanation Panel | ![explanation](screenshots/explanation.png) |
+Right after that class, I wrote down a small note:
 
----
+> “Build a deadlock visualizer someday.”
 
-# 📘 Project Story — *How This Project Started*
+I even created a short PDF draft for the idea.
 
-## 1. A Random Boring OS Lecture
+Later in **3rd year**, while freeing up storage on my Mac, I unexpectedly came across that old PDF again.  
+At the same time, we were studying deadlocks in DBMS, which brought the idea back into focus.
 
-This journey surprisingly began in a regular Operating Systems lecture.  
-The class was dull — until the professor introduced **Deadlocks**.
+That rediscovery pushed me to finally turn the original classroom thought into a full-stack project — resulting in **Deadlock Detective**.
 
-The concept immediately felt “visual”:  
-processes → resources → arrows → cycle.
 
-Right there, I wrote a small line in my notes:
-
-> “Make a visual deadlock simulator someday.”
-
-I even drafted a small PDF describing the idea.  
-Then life continued — and the idea got lost in my laptop.
+## Live Demo
+Video demo: `https://youtu.be/your-video-link`  
+(Screenshots can be added inside a `screenshots/` folder.)
 
 ---
 
-## 2. Rediscovered After Years (DBMS Lecture)
+## Features
 
-In my 3rd year, DBMS introduced deadlocks again.  
-Suddenly, I remembered that old OS idea.
-
-After digging through folders, backups and even the Recycle Bin…  
-I actually found the **original draft**.
-
-That moment I decided:
-
-> “This time, I will build it for real.”
+- Add process and resource nodes  
+- Create request (P → R) and allocation (R → P) edges  
+- Detect deadlocks using DFS-based cycle detection  
+- Highlights the exact cycle responsible  
+- Remove processes to resolve deadlock  
+- Explanation panel describing detection results  
 
 ---
 
-## 3. 21-Day Consistency Plan
+## Deadlock Theory (Quick Summary)
 
-I created a simple Notion tracker:
+A deadlock occurs when the four Coffman conditions hold:
 
-- 30–60 minutes per day  
-- One feature per day  
-- No rushing  
-- Use AI only as a helper  
-- Daily logging  
+1. Mutual Exclusion  
+2. Hold and Wait  
+3. No Preemption  
+4. Circular Wait  
 
-Slowly, the project grew:
+This project detects **Circular Wait** by identifying cycles in the resource allocation graph.
 
-- **Day 1:** Setup client/server  
-- **Day 5:** ReactFlow basic graph  
-- **Day 8:** Dynamic processes/resources  
-- **Day 10:** Backend DFS deadlock detection  
-- **Day 12:** Explanation panel  
-- **Day 14:** Fun elements (alerts + confetti)  
-- **Day 15:** Documentation + cleanup  
-
-What started in a boring class is now a complete **full-stack OS project**.
-
----
-
-# 🎯 Features
-
-## Core
-
-- Add Process nodes (Chrome, Zoom, Spotify…)
-- Add Resource nodes (RAM, GPU, Camera…)
-- Create:
-  - Request edges (P → R)
-  - Allocation edges (R → P)
-- Detect Deadlock using backend cycle detection
-- Highlight exact deadlock edges in red
-- Explanation panel for each detection
-- Kill Process to resolve deadlock instantly
-
-## UI/UX
-
-- Clean Tailwind dashboard  
-- Draggable nodes (ReactFlow)  
-- MiniMap, zoom, pan, controls  
-- Confetti when system becomes safe  
-- Alerts when deadlock occurs  
-- Dark UX theme
-
----
-
-# 🧠 OS / DBMS Theory Included
-
-Deadlock occurs when these **Coffman conditions** hold:
-
-1. **Mutual Exclusion**  
-2. **Hold and Wait**  
-3. **No Preemption**  
-4. **Circular Wait**
-
-This project specifically **detects circular wait** using cycle detection.
-
-Example backend result:
+Backend example:
 
 ```json
 {
@@ -142,111 +71,8 @@ Example backend result:
   "cycle": ["P1", "R1", "P2", "R2", "P1"]
 }
 ```
-🔍 Deadlock Detection Logic (Backend)
-Located in: /backend/graphLogic.js
 
-js
-Copy code
-export function detectDeadlock(graph) {
-  const visited = new Set();
-  const recStack = new Set();
-  const path = [];
+Developed as a practical and interactive approach to understanding OS/DBMS concepts.
+---
 
-  const dfs = (node) => {
-    if (!graph[node]) return null;
-    if (recStack.has(node)) return [...path, node];
-    if (visited.has(node)) return null;
-
-    visited.add(node);
-    recStack.add(node);
-    path.push(node);
-
-    for (let neighbor of graph[node]) {
-      const cycle = dfs(neighbor);
-      if (cycle) return cycle;
-    }
-
-    recStack.delete(node);
-    path.pop();
-    return null;
-  };
-
-  for (let node in graph) {
-    const cycle = dfs(node);
-    if (cycle) return { deadlock: true, cycle };
-  }
-
-  return { deadlock: false, cycle: [] };
-}
-Algorithm used:
-✔ DFS
-✔ Recursion stack tracking
-✔ Cycle detection
-
-🧩 Folder Structure
-text
-Copy code
-deadlock-detective/
-│
-├── backend/
-│   ├── index.js
-│   └── graphLogic.js
-│
-├── client/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── pages/
-│   │   │   └── DeadlockVisualizer.jsx
-│   │   └── ...
-│   ├── index.html
-│
-├── screenshots/
-│   ├── dashboard.png
-│   ├── deadlock.png
-│   ├── resolved.png
-│   ├── explanation.png
-│   └── demo.gif
-│
-└── README.md
-⚙ Installation
-Backend
-bash
-Copy code
-cd backend
-npm install
-node index.js
-Runs at:
-
-arduino
-Copy code
-http://localhost:8080
-Frontend
-bash
-Copy code
-cd client
-npm install
-npm run dev
-Runs at:
-
-arduino
-Copy code
-http://localhost:5173
-🔮 Future Enhancements
-Export graph as PNG / JSON
-
-Add Banker's Algorithm visualizer
-
-Add CPU Scheduling visualizer (FCFS, SJF, RR)
-
-Add animations for node connections
-
-Save sessions locally
-
-👨‍💻 Author
-Rachit Agarwal
-
-This project is the result of a long-forgotten idea revived during 3rd year, built with consistency and curiosity.
-A full OS/DBMS concept turned into a real working full-stack tool.
-
-⭐ If you like this project
-Please star ⭐ the repository — it motivates continued development!
+If you found the project helpful, consider ⭐️ the repository.
