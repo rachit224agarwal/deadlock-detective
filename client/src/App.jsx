@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import DeadlockVisualizer from "./pages/DeadlockVisualizer";
 
@@ -16,7 +16,18 @@ export default function App() {
     <BrowserRouter>
       <div className={`min-h-screen ${baseBg} ${baseText} transition-colors relative`}>
         
-        {/* Small Dark/Light Toggle - Top Right */}
+        {/* Mobile Blocker */}
+        <div className="fixed inset-0 z-[100] flex md:hidden items-center justify-center bg-slate-950 p-6">
+          <div className="text-center max-w-sm">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-xl shadow-red-500/30 animate-pulse"></div>
+            <h2 className="text-2xl font-bold text-white mb-3">Desktop Only</h2>
+            <p className="text-slate-400 text-sm leading-relaxed mb-6">
+              Deadlock Detective is designed for desktop screens. Please open on a laptop or desktop.
+            </p>
+          </div>
+        </div>
+
+        {/* Dark/Light Toggle */}
         <button
           onClick={() => setDarkMode((d) => !d)}
           className={`fixed top-4 right-4 z-50 p-2.5 rounded-full border ${borderColor} ${
@@ -35,190 +46,172 @@ export default function App() {
           )}
         </button>
 
-        {/* MAIN CONTENT */}
+        {/* Main Content */}
         <main className="max-w-6xl mx-auto px-4 py-6">
           <Routes>
-            <Route
-              path="/"
-              element={<Dashboard cardBg={cardBg} borderColor={borderColor} />}
-            />
-            <Route
-              path="/visualizer"
-              element={
-                <DeadlockVisualizer
-                  cardBg={cardBg}
-                  borderColor={borderColor}
-                  darkMode={darkMode}
-                />
-              }
-            />
+            <Route path="/" element={<Dashboard cardBg={cardBg} borderColor={borderColor} />} />
+            <Route path="/visualizer" element={<DeadlockVisualizer cardBg={cardBg} borderColor={borderColor} darkMode={darkMode} />} />
           </Routes>
         </main>
 
-        {/* FOOTER */}
+        {/* Footer */}
         <footer className={`border-t ${borderColor} mt-4`}>
           <div className="max-w-6xl mx-auto px-4 py-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              
-              {/* Left - Branding */}
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-700 text-white font-bold text-sm shadow-lg shadow-red-500/20">
-                  DD
-                </span>
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-700 text-white font-bold text-sm shadow-lg shadow-red-500/20">DD</span>
                 <div>
                   <p className="text-sm font-semibold">Deadlock Detective</p>
                   <p className="text-xs opacity-50">Built for OS enthusiasts 🔒</p>
                 </div>
               </div>
-
-              {/* Center - Unique Quote */}
-              <div className="text-center">
-                <p className="text-xs opacity-60 italic">
-                  "In the world of processes, patience without strategy leads to deadlock."
-                </p>
-              </div>
-
-              {/* Right - Docs Button */}
+              <p className="text-xs opacity-60 italic">"Patience without strategy leads to deadlock."</p>
               <button
                 onClick={() => setShowDocs(true)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border ${borderColor} ${
                   darkMode ? "bg-slate-800/50 hover:bg-slate-800" : "bg-white hover:bg-slate-50"
                 } transition-all hover:scale-105`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Docs & Notes
+                📖 Read Docs
               </button>
             </div>
-
-            {/* Bottom Credits */}
-            <div className="mt-1 pt-2  border-slate-700/50 flex flex-wrap items-center justify-center gap-4 text-xs opacity-90">
+            <div className="mt-2 pt-2 flex flex-wrap items-center justify-center gap-4 text-xs opacity-90">
               <span>© 2025 Deadlock Detective</span>
               <span>•</span>
-              <span>OS Concept Visualizer</span>
-              <span>•</span>
-              <span>Made with ❤️ for learning by <Link to="https://www.linkedin.com/in/rachit-agarwal-a52924282/"> <span className="text-red-500 ">Rachit Agarwal</span> </Link> </span>
+              <span>Built for learners by {" "}
+                <a href="https://www.linkedin.com/in/rachit-agarwal-a52924282/" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
+                  Rachit Agarwal
+                </a>
+              </span>
             </div>
           </div>
         </footer>
 
-        {/* DOCS MODAL */}
+        {/* SIMPLE DOCS MODAL - Typewriter Style */}
         {showDocs && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowDocs(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80" onClick={() => setShowDocs(false)}>
             <div 
-              className={`w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-2xl ${cardBg} border ${borderColor} shadow-2xl p-6`}
+              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-black rounded-none shadow-2xl border-4 border-black"
               onClick={(e) => e.stopPropagation()}
+              style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-lg">
-                    <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
+              {/* Paper texture header */}
+              <div className="border-b-4 border-black p-6 text-center">
+                <h1 className="text-2xl font-bold tracking-wider uppercase">DEADLOCK</h1>
+                <p className="text-xs mt-1 tracking-widest">A Brief Guide for Operating Systems</p>
+              </div>
+
+              {/* Content */}
+              <div className="p-8 space-y-6 text-sm leading-relaxed">
+                
+                {/* Definition */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§1. DEFINITION</h2>
+                  <p>
+                    A <strong>deadlock</strong> is a situation where two or more processes are 
+                    unable to proceed because each is waiting for resources held by the other.
+                  </p>
+                  <p className="mt-2 pl-4 border-l-2 border-black italic">
+                    Think of it as two people in a narrow hallway, each waiting for the other to move first. Neither moves. Forever.
+                  </p>
+                </section>
+
+                {/* Four Conditions */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§2. FOUR CONDITIONS (Coffman, 1971)</h2>
+                  <p className="mb-3">All four must hold simultaneously for deadlock to occur:</p>
+                  <div className="space-y-2">
+                    <p><strong>1. Mutual Exclusion</strong> — Only one process can use a resource at a time.</p>
+                    <p><strong>2. Hold and Wait</strong> — Process holds resources while waiting for more.</p>
+                    <p><strong>3. No Preemption</strong> — Resources cannot be forcibly taken away.</p>
+                    <p><strong>4. Circular Wait</strong> — A circular chain of processes, each waiting for the next.</p>
                   </div>
-                  <h2 className="text-xl font-bold">Documentation & Notes</h2>
+                  <p className="mt-3 text-xs italic">* Breaking ANY one condition prevents deadlock.</p>
+                </section>
+
+                {/* RAG */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§3. RESOURCE ALLOCATION GRAPH</h2>
+                  <p>A directed graph showing resource allocation:</p>
+                  <div className="mt-3 font-mono text-xs bg-gray-100 p-3 border border-black">
+                    P → R : Process P requests Resource R<br/>
+                    R → P : Resource R is allocated to Process P<br/>
+                    <br/>
+                    CYCLE IN GRAPH = DEADLOCK (for single-instance resources)
+                  </div>
+                </section>
+
+                {/* Detection */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§4. DETECTION METHOD</h2>
+                  <p>
+                    This tool uses <strong>DFS-based cycle detection</strong> on the wait-for graph. 
+                    Time complexity: O(V + E).
+                  </p>
+                  <div className="mt-3 font-mono text-xs bg-gray-100 p-3 border border-black">
+                    for each node:<br/>
+                    &nbsp;&nbsp;run DFS<br/>
+                    &nbsp;&nbsp;if node visited twice in same path → CYCLE FOUND
+                  </div>
+                </section>
+
+                {/* Handling */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§5. HANDLING STRATEGIES</h2>
+                  <div className="space-y-2">
+                    <p><strong>Prevention:</strong> Design system so one condition can never hold.</p>
+                    <p><strong>Avoidance:</strong> Check before allocation (Banker's Algorithm).</p>
+                    <p><strong>Detection:</strong> Allow deadlock, detect it, then recover.</p>
+                    <p><strong>Ignorance:</strong> Pretend it won't happen (used by most OS!).</p>
+                  </div>
+                </section>
+
+                {/* Recovery */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§6. RECOVERY</h2>
+                  <div className="space-y-1">
+                    <p>• <strong>Kill process</strong> — Terminate one or more processes in cycle.</p>
+                    <p>• <strong>Preempt resource</strong> — Forcibly take resource from a process.</p>
+                    <p>• <strong>Rollback</strong> — Restore process to earlier checkpoint.</p>
+                  </div>
+                </section>
+
+                {/* Quick Facts */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§7. QUICK FACTS</h2>
+                  <div className="space-y-1 text-xs">
+                    <p>→ Deadlock ≠ Starvation (starvation may eventually end)</p>
+                    <p>→ Banker's Algorithm = Avoidance, not Detection</p>
+                    <p>→ RAG cycle = Deadlock only for single-instance resources</p>
+                    <p>→ Windows & Linux mostly use the "Ostrich" approach</p>
+                    <p>→ Dining Philosophers = Classic deadlock example</p>
+                  </div>
+                </section>
+
+                {/* References */}
+                <section>
+                  <h2 className="text-lg font-bold border-b-2 border-black pb-1 mb-3">§8. REFERENCES</h2>
+                  <div className="text-xs space-y-1">
+                    <p>• Silberschatz, "Operating System Concepts" Ch.8</p>
+                    <p>• Coffman et al., "System Deadlocks" (1971)</p>
+                    <p>• Dijkstra, "Cooperating Sequential Processes" (1965)</p>
+                    <p>• geeksforgeeks.org/deadlock-in-operating-system</p>
+                  </div>
+                </section>
+
+                {/* Footer */}
+                <div className="pt-6 mt-6 border-t-2 border-black text-center text-xs">
+                  <p>— END OF DOCUMENT —</p>
+                  <p className="mt-2 italic">Deadlock Detective • 2025</p>
                 </div>
-                <button 
-                  onClick={() => setShowDocs(false)}
-                  className="p-2 rounded-lg hover:bg-slate-700/50 transition"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
 
-              {/* What is Deadlock */}
-              <div className={`p-4 rounded-xl border ${borderColor} mb-4`}>
-                <h3 className="font-semibold text-red-400 mb-2 flex items-center gap-2">
-                  <span className="text-lg">🔒</span> What is Deadlock?
-                </h3>
-                <p className="text-sm opacity-80 leading-relaxed">
-                  A deadlock is a situation where a set of processes are blocked because each process is holding a resource and waiting for another resource acquired by some other process in the set.
-                </p>
-              </div>
-
-              {/* Conditions */}
-              <div className={`p-4 rounded-xl border ${borderColor} mb-4`}>
-                <h3 className="font-semibold text-amber-400 mb-3 flex items-center gap-2">
-                  <span className="text-lg">⚡</span> 4 Necessary Conditions (Coffman)
-                </h3>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="p-3 bg-slate-800/30 rounded-lg">
-                    <p className="font-medium text-emerald-400">1. Mutual Exclusion</p>
-                    <p className="text-xs opacity-70 mt-1">Only one process can use a resource at a time</p>
-                  </div>
-                  <div className="p-3 bg-slate-800/30 rounded-lg">
-                    <p className="font-medium text-sky-400">2. Hold & Wait</p>
-                    <p className="text-xs opacity-70 mt-1">Process holds resource while waiting for others</p>
-                  </div>
-                  <div className="p-3 bg-slate-800/30 rounded-lg">
-                    <p className="font-medium text-purple-400">3. No Preemption</p>
-                    <p className="text-xs opacity-70 mt-1">Resources cannot be forcibly taken away</p>
-                  </div>
-                  <div className="p-3 bg-slate-800/30 rounded-lg">
-                    <p className="font-medium text-red-400">4. Circular Wait</p>
-                    <p className="text-xs opacity-70 mt-1">Circular chain of processes waiting for each other</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Detection Algorithm */}
-              <div className={`p-4 rounded-xl border ${borderColor} mb-4`}>
-                <h3 className="font-semibold text-sky-400 mb-2 flex items-center gap-2">
-                  <span className="text-lg">🔍</span> Detection Algorithm
-                </h3>
-                <p className="text-sm opacity-80 leading-relaxed">
-                  This tool uses <span className="text-emerald-400 font-medium">DFS-based cycle detection</span> on the Resource Allocation Graph (RAG). If a cycle exists in the wait-for graph, a deadlock is present.
-                </p>
-                <div className="mt-3 p-3 bg-slate-800/30 rounded-lg text-xs font-mono opacity-70">
-                  Process → Resource (Request Edge)<br/>
-                  Resource → Process (Assignment Edge)
-                </div>
-              </div>
-
-              {/* Recovery */}
-              <div className={`p-4 rounded-xl border ${borderColor} mb-4`}>
-                <h3 className="font-semibold text-emerald-400 mb-2 flex items-center gap-2">
-                  <span className="text-lg">🛠️</span> Recovery Methods
-                </h3>
-                <ul className="text-sm opacity-80 space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-400">•</span>
-                    <span><strong>Process Termination:</strong> Kill one or more processes to break the cycle</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-400">•</span>
-                    <span><strong>Resource Preemption:</strong> Take resources from some processes</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-sky-400">•</span>
-                    <span><strong>Rollback:</strong> Checkpoint and rollback processes</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Viva Tips */}
-              <div className={`p-4 rounded-xl border border-dashed border-red-500/40 bg-red-500/5`}>
-                <h3 className="font-semibold text-red-400 mb-2 flex items-center gap-2">
-                  <span className="text-lg">💡</span> Viva Tips
-                </h3>
-                <ul className="text-sm opacity-80 space-y-1">
-                  <li>• Explain the difference between deadlock prevention vs avoidance vs detection</li>
-                  <li>• Banker's Algorithm is used for deadlock avoidance (safe state)</li>
-                  <li>• RAG with single instances can detect deadlock via cycle detection</li>
-                  <li>• Starvation ≠ Deadlock (process may still eventually execute)</li>
-                </ul>
-              </div>
-
-              {/* Close Button */}
+              {/* Close button */}
               <button
                 onClick={() => setShowDocs(false)}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all"
+                className="w-full py-4 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors"
               >
-                Got it! 👍
+                Close Document
               </button>
             </div>
           </div>

@@ -213,6 +213,9 @@ function VisualizerInner({ cardBg, borderColor, darkMode }) {
   };
 
   // Detect deadlock
+ // ...existing code...
+
+  // Detect deadlock
   const detectDeadlock = async () => {
     try {
       const res = await fetch("http://localhost:8080/check", {
@@ -220,6 +223,10 @@ function VisualizerInner({ cardBg, borderColor, darkMode }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ graph }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
 
       const data = await res.json();
       const cycle = data.cycle || [];
@@ -266,9 +273,15 @@ function VisualizerInner({ cardBg, borderColor, darkMode }) {
         setExplanation("No deadlock. The system is currently in a safe state.");
       }
     } catch (err) {
-      console.error("Deadlock error:", err);
+      console.error("Deadlock detection error:", err);
+      setDeadlockMessage("⚠️ Error connecting to server");
+      setExplanation(
+        `Failed to connect to backend server. Make sure the server is running on http://localhost:8080. Error: ${err.message}`
+      );
     }
   };
+
+// ...existing code...
 
   // Kill Process
   const killProcess = () => {
