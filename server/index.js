@@ -4,9 +4,9 @@ import { detectDeadlock } from "./graphLogic.js";
 
 const app = express();
 
-app.use(cors({
-  origin: "http://localhost:5174"
-}));
+
+app.use(cors());
+
 app.use(express.json());
 
 app.get("/",(req,res)=>{
@@ -22,4 +22,5 @@ app.post("/check", (req, res) => {
 
 });
 
-app.listen( 8080, "0.0.0.0" , () => console.log("Server live on port 8080") );
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, "0.0.0.0", () => console.log(`Server live on port ${PORT}`));
