@@ -43,13 +43,23 @@ Video demo: `https://youtu.be/your-video-link`
 
 ## Features
 
-- Add process and resource nodes  
-- Create request (P → R) and allocation (R → P) edges  
-- Detect deadlocks using DFS-based cycle detection  
-- Highlights the exact cycle responsible  
-- Remove processes to resolve deadlock  
-- Explanation panel describing detection results  
+**Core**
+- Add processes & resources dynamically
+- Create Request (P → R) and Allocation (R → P) edges
+- DFS-based deadlock detection
+- Cycle highlighting with animated edges
+- Kill process to resolve deadlock
+- Explanation panel for viva/reports
 
+**Game Mode** 
+- 60-second timed challenge
+- Create a deadlock before time runs out
+- Score based on speed
+- Confetti on win!
+
+**UI/UX**
+- Built-in docs & OS theory
+- Desktop-only optimized layout
 ---
 
 ## Deadlock Theory (Quick Summary)
