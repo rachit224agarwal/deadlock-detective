@@ -358,9 +358,9 @@ function VisualizerInner({ cardBg, borderColor, darkMode }) {
 
         <div className="mt-2 space-y-3 text-sm">
           <div>
-            <label className="block text-xs mb-1">Process ID</label>
+            <label className="block text-xs mb-1">Process Name (case-sensitive)</label>
             <input
-              placeholder="P1 or P_Chrome_123"
+              placeholder="Write process_name like P1"
               value={processInput}
               onChange={(e) => setProcessInput(e.target.value)}
               className="w-full px-2 py-1.5 rounded border border-slate-400 bg-transparent text-sm"
@@ -368,9 +368,9 @@ function VisualizerInner({ cardBg, borderColor, darkMode }) {
           </div>
 
           <div>
-            <label className="block text-xs mb-1">Resource ID</label>
+            <label className="block text-xs mb-1">Resource Name (case-sensitive)</label>
             <input
-              placeholder="R1 or R_Mic_456"
+              placeholder="Write resource_name like R1"
               value={resourceInput}
               onChange={(e) => setResourceInput(e.target.value)}
               className="w-full px-2 py-1.5 rounded border border-slate-400 bg-transparent text-sm"
